@@ -403,9 +403,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
         await query.answer()
     elif query.data == "start":
         buttons = [[
-            InlineKeyboardButton('🔍 Request A Movie', url='https://t.me/ReeliumMoviesGroup')
-        ],  [
-            InlineKeyboardButton('🔍 Search Movie', switch_inline_query_current_chat=''),
+            InlineKeyboardButton('🔍 Search', switch_inline_query_current_chat=''),
             InlineKeyboardButton('🤖 Updates', url='https://t.me/TitanBotUpdates')
         ], [
             InlineKeyboardButton('ℹ️ Help', callback_data='help'),
@@ -437,8 +435,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )
     elif query.data == "about":
         buttons = [[
-            InlineKeyboardButton('Request A Movie', url='https://t.me/ReeliumMoviesGroup')
-        ],  [
             InlineKeyboardButton('🤖 Updates', url='https://t.me/TitanBotUpdates'),
             InlineKeyboardButton('♥️ Source', callback_data='source')
         ], [
