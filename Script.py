@@ -11,11 +11,9 @@ Here is the help for my commands."""
 ✯ Bot Server: Koyeb
 ✯ Build Status: v1.0 [ Beta ]"""
     SOURCE_TXT = """<b>NOTE:</b>
-- SplatSearchBot is a open source project. 
+- SPLAT is a open source project. 
 - Source - https://github.com/aidenhakimoff/Splat-Search-Bot
-
-<b>DEVS:</b>
-- <a href=https://t.me/TitanBotUpdates>Titan Bots</a>"""
+"""
     MANUELFILTER_TXT = """<b>Help for Filters:</b>
 
 - Filter is the feature were users can set automated replies for a particular keyword and Splat will respond whenever a keyword is found the message.
