@@ -1,10 +1,25 @@
-pyrogram>=2.0.30
-tgcrypto
-pymongo[srv]==3.12.3
-motor==2.5.1
-marshmallow==3.14.1
-umongo==3.0.1
-requests
-bs4
+pyrogram==2.0.106
+tgcrypto==1.2.5
+
+# Correct modern MongoDB stack
+pymongo==4.7.2
+motor==3.4.0
+dnspython==2.7.0
+certifi>=2024.2.2
+
+# Data validation
+marshmallow==3.21.1
+umongo==3.1.0
+
+# IMDB + scraping
+requests==2.32.3
+bs4==0.0.2
+beautifulsoup4==4.12.3
 imdbpy==2021.4.18
-aiohttp
+
+# Async HTTP
+aiohttp==3.10.8
+
+# SQLAlchemy (required by IMDbPy, pinned for stability)
+SQLAlchemy==2.0.35
+lxml==5.3.0
