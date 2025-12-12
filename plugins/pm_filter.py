@@ -80,6 +80,20 @@ async def give_filter(client, message):
     if k is False:
         await auto_filter(client, message)
 
+@Client.on_message(filters.private & filters.text & filters.incoming)
+async def private_search(client, message):
+    # Ignore commands
+    if message.text.startswith("/"):
+        return
+
+    # Optional auth check
+    if AUTH_USERS and str(message.from_user.id) not in AUTH_USERS:
+        return await message.reply_text(
+            "❌ You are not authorized to use this bot in private."
+        )
+
+    # Trigger the same search logic used in groups
+    await auto_filter(client, message)
 
 # ─────────────────────────────────────────────
 # PAGINATION
