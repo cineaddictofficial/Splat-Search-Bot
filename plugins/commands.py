@@ -25,7 +25,7 @@ from utils import (
 logger = logging.getLogger(__name__)
 
 # =====================================================
-# 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS (FASTEST)
+# 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS
 # =====================================================
 START_IMAGE_FILE_IDS = [
     "AgACAgUAAxkDAAOaaT2y2B1TE75n7POjQAABGQvifxP5AAJzC2sbyLvxVcfdYFzDQxoyAAgBAAMCAAN3AAceBA",
@@ -35,29 +35,16 @@ START_IMAGE_FILE_IDS = [
 ]
 
 # =====================================================
-# /genid — GENERATE FILE_ID (ADMIN / PRIVATE)
-# =====================================================
-@Client.on_message(filters.command("genid") & filters.private & filters.user(ADMINS))
-async def gen_file_id(client, message):
-    msg = await message.reply_photo("images/start_1.png")
-    await message.reply_text(
-        f"<b>FILE_ID:</b>\n<code>{msg.photo.file_id}</code>",
-        parse_mode=enums.ParseMode.HTML,
-    )
-
-# =====================================================
-# /start COMMAND (ZERO DELAY)
+# /start COMMAND
 # =====================================================
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
 
     caption = script.START_TXT.format(
-        message.from_user.mention if message.from_user else message.chat.title,
-        temp.U_NAME,
-        temp.B_NAME,
+        message.from_user.mention if message.from_user else message.chat.title
     )
 
-    # ---------------- GROUP ----------------
+    # -------- GROUP --------
     if message.chat.type in (enums.ChatType.GROUP, enums.ChatType.SUPERGROUP):
         await message.reply(
             caption,
@@ -72,19 +59,8 @@ async def start(client, message):
         asyncio.create_task(_log_group(client, message))
         return
 
-    # ---------------- PRIVATE ----------------
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton("🔍 Search", switch_inline_query_current_chat=""),
-                InlineKeyboardButton("🤖 Updates", url="https://t.me/+lRax6d2QVoJlNmMx"),
-            ],
-            [
-                InlineKeyboardButton("ℹ️ Help", callback_data="help"),
-                InlineKeyboardButton("😊 About", callback_data="about"),
-            ],
-        ]
-    )
+    # -------- PRIVATE --------
+    reply_markup = _start_buttons()
 
     try:
         file_id = secrets.choice(START_IMAGE_FILE_IDS)
@@ -107,14 +83,14 @@ async def start(client, message):
 
 
 # =====================================================
-# CALLBACKS — HELP / ABOUT / BACK
+# CALLBACKS — START / HELP / ABOUT
 # =====================================================
 @Client.on_callback_query(filters.regex("^help$"))
 async def help_callback(client, query: CallbackQuery):
     await query.answer()
     await query.message.edit_caption(
         script.HELP_TXT,
-        reply_markup=_back_button(),
+        reply_markup=_help_buttons(),
         parse_mode=enums.ParseMode.HTML,
     )
 
@@ -124,46 +100,138 @@ async def about_callback(client, query: CallbackQuery):
     await query.answer()
     await query.message.edit_caption(
         script.ABOUT_TXT.format(temp.B_NAME),
-        reply_markup=_back_button(),
+        reply_markup=_back_to_start(),
         parse_mode=enums.ParseMode.HTML,
     )
 
 
-@Client.on_callback_query(filters.regex("^back$"))
-async def back_callback(client, query: CallbackQuery):
+@Client.on_callback_query(filters.regex("^back_start$"))
+async def back_start(client, query: CallbackQuery):
     await query.answer()
-
-    caption = script.START_TXT.format(
-        query.from_user.mention,
-        temp.U_NAME,
-        temp.B_NAME,
-    )
-
     await query.message.edit_caption(
-        caption,
-        reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("🔍 Search", switch_inline_query_current_chat=""),
-                    InlineKeyboardButton("🤖 Updates", url="https://t.me/+lRax6d2QVoJlNmMx"),
-                ],
-                [
-                    InlineKeyboardButton("ℹ️ Help", callback_data="help"),
-                    InlineKeyboardButton("😊 About", callback_data="about"),
-                ],
-            ]
-        ),
+        script.START_TXT.format(query.from_user.mention),
+        reply_markup=_start_buttons(),
         parse_mode=enums.ParseMode.HTML,
     )
 
-
-def _back_button():
-    return InlineKeyboardMarkup(
-        [[InlineKeyboardButton("⬅️ Back", callback_data="back")]]
-    )
 
 # =====================================================
-# BACKGROUND LOGGING (NON-BLOCKING)
+# HELP CATEGORIES
+# =====================================================
+@Client.on_callback_query(filters.regex("^help_filters$"))
+async def help_filters(client, query):
+    await query.answer()
+    await query.message.edit_caption(
+        script.MANUELFILTER_TXT,
+        reply_markup=_back_to_help(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^help_buttons$"))
+async def help_buttons(client, query):
+    await query.answer()
+    await query.message.edit_caption(
+        script.BUTTON_TXT,
+        reply_markup=_back_to_help(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^help_autofilter$"))
+async def help_autofilter(client, query):
+    await query.answer()
+    await query.message.edit_caption(
+        script.AUTOFILTER_TXT,
+        reply_markup=_back_to_help(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^help_connections$"))
+async def help_connections(client, query):
+    await query.answer()
+    await query.message.edit_caption(
+        script.CONNECTION_TXT,
+        reply_markup=_back_to_help(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^help_extra$"))
+async def help_extra(client, query):
+    await query.answer()
+    await query.message.edit_caption(
+        script.EXTRAMOD_TXT,
+        reply_markup=_back_to_help(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^help_admin$"))
+async def help_admin(client, query):
+    await query.answer()
+    await query.message.edit_caption(
+        script.ADMIN_TXT,
+        reply_markup=_back_to_help(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+# =====================================================
+# BUTTON BUILDERS
+# =====================================================
+def _start_buttons():
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("🔍 Search", switch_inline_query_current_chat=""),
+                InlineKeyboardButton("🤖 Updates", url="https://t.me/+lRax6d2QVoJlNmMx"),
+            ],
+            [
+                InlineKeyboardButton("ℹ️ Help", callback_data="help"),
+                InlineKeyboardButton("😊 About", callback_data="about"),
+            ],
+        ]
+    )
+
+
+def _help_buttons():
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("🎛 Filters", callback_data="help_filters"),
+                InlineKeyboardButton("🔘 Buttons", callback_data="help_buttons"),
+            ],
+            [
+                InlineKeyboardButton("🤖 Auto Filter", callback_data="help_autofilter"),
+                InlineKeyboardButton("🔗 Connections", callback_data="help_connections"),
+            ],
+            [
+                InlineKeyboardButton("🧰 Extra", callback_data="help_extra"),
+                InlineKeyboardButton("🔐 Admin", callback_data="help_admin"),
+            ],
+            [
+                InlineKeyboardButton("⬅️ Back", callback_data="back_start"),
+            ],
+        ]
+    )
+
+
+def _back_to_help():
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("⬅️ Back to Help", callback_data="help")]]
+    )
+
+
+def _back_to_start():
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("⬅️ Back", callback_data="back_start")]]
+    )
+
+
+# =====================================================
+# BACKGROUND LOGGING
 # =====================================================
 async def _log_user(client, message):
     try:
@@ -196,88 +264,3 @@ async def _log_group(client, message):
             await db.add_chat(message.chat.id, message.chat.title)
     except Exception as e:
         logger.error(f"GROUP LOG ERROR: {e}")
-
-# =====================================================
-# ADMIN COMMANDS (UNCHANGED)
-# =====================================================
-@Client.on_message(filters.command("channel") & filters.user(ADMINS))
-async def channel_info(bot, message):
-    channels = CHANNELS if isinstance(CHANNELS, list) else [CHANNELS]
-    text = "📑 **Indexed channels/groups**\n"
-    for channel in channels:
-        chat = await bot.get_chat(channel)
-        text += "\n@" + chat.username if chat.username else "\n" + chat.title
-    text += f"\n\n**Total:** {len(channels)}"
-    await message.reply(text)
-
-
-@Client.on_message(filters.command("logs") & filters.user(ADMINS))
-async def log_file(bot, message):
-    await message.reply_document("TelegramBot.log")
-
-
-@Client.on_message(filters.command("delete") & filters.user(ADMINS))
-async def delete(bot, message):
-    reply = message.reply_to_message
-    if not reply or not reply.media:
-        return await message.reply("Reply to a file with /delete")
-
-    msg = await message.reply("Processing...")
-    for file_type in ("document", "video", "audio"):
-        media = getattr(reply, file_type, None)
-        if media:
-            break
-    else:
-        return await msg.edit("Unsupported file type")
-
-    file_id, _ = unpack_new_file_id(media.file_id)
-    result = await Media.collection.delete_one({"_id": file_id})
-    await msg.edit("✅ Deleted" if result.deleted_count else "❌ Not found")
-
-
-@Client.on_message(filters.command("deleteall") & filters.user(ADMINS))
-async def delete_all_index(bot, message):
-    await message.reply(
-        "Delete all indexed files?",
-        reply_markup=InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("YES", callback_data="autofilter_delete")],
-                [InlineKeyboardButton("CANCEL", callback_data="close_data")],
-            ]
-        ),
-    )
-
-
-@Client.on_callback_query(filters.regex("^autofilter_delete$"))
-async def delete_all_index_confirm(bot, query):
-    await Media.collection.drop()
-    await query.answer("Done")
-    await query.message.edit("✅ All indexed files deleted")
-
-
-@Client.on_message(filters.command("settings"))
-async def settings(client, message):
-    userid = message.from_user.id
-    grp_id = (
-        await active_connection(str(userid))
-        if message.chat.type == enums.ChatType.PRIVATE
-        else message.chat.id
-    )
-    settings = await get_settings(grp_id)
-    if settings:
-        await message.reply("⚙ Settings loaded")
-
-
-@Client.on_message(filters.command("set_template"))
-async def save_template(client, message):
-    if len(message.command) < 2:
-        return await message.reply("No template provided")
-
-    template = message.text.split(" ", 1)[1]
-    grp_id = (
-        await active_connection(str(message.from_user.id))
-        if message.chat.type == enums.ChatType.PRIVATE
-        else message.chat.id
-    )
-    await save_group_settings(grp_id, "template", template)
-    await message.reply("✅ Template updated")
