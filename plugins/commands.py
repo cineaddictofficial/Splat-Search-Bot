@@ -4,7 +4,7 @@ import secrets
 
 from Script import script
 from pyrogram import Client, filters, enums
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from database.ia_filterdb import Media, unpack_new_file_id
 from database.users_chats_db import db
@@ -27,19 +27,23 @@ logger = logging.getLogger(__name__)
 # =====================================================
 # 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS (FASTEST)
 # =====================================================
-# Replace these with YOUR real file_ids
 START_IMAGE_FILE_IDS = [
-	"AgACAgUAAxkDAAOaaT2y2B1TE75n7POjQAABGQvifxP5AAJzC2sbyLvxVcfdYFzDQxoyAAgBAAMCAAN3AAceBA",
-	"AgACAgUAAxkDAAOeaT2zAzYxAbpaCSVw_2u1fPfzLcMAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
-	"AgACAgUAAxkDAAOiaT2zMMcGltjFxUu-Tnw4hGnWpfQAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
-	"AgACAgUAAxkDAAOpaT2zVnP7bCNf039DdRI6DbjA3xIAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
-    ]
+    "AgACAgUAAxkDAAOaaT2y2B1TE75n7POjQAABGQvifxP5AAJzC2sbyLvxVcfdYFzDQxoyAAgBAAMCAAN3AAceBA",
+    "AgACAgUAAxkDAAOeaT2zAzYxAbpaCSVw_2u1fPfzLcMAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
+    "AgACAgUAAxkDAAOiaT2zMMcGltjFxUu-Tnw4hGnWpfQAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
+    "AgACAgUAAxkDAAOpaT2zVnP7bCNf039DdRI6DbjA3xIAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
+]
 
-@Client.on_message(filters.command("genid") & filters.private)
+# =====================================================
+# /genid — GENERATE FILE_ID (ADMIN / PRIVATE)
+# =====================================================
+@Client.on_message(filters.command("genid") & filters.private & filters.user(ADMINS))
 async def gen_file_id(client, message):
     msg = await message.reply_photo("images/start_1.png")
-    await message.reply_text(f"FILE_ID:\n<code>{msg.photo.file_id}</code>",
-                             parse_mode=enums.ParseMode.HTML)
+    await message.reply_text(
+        f"<b>FILE_ID:</b>\n<code>{msg.photo.file_id}</code>",
+        parse_mode=enums.ParseMode.HTML,
+    )
 
 # =====================================================
 # /start COMMAND (ZERO DELAY)
@@ -65,8 +69,6 @@ async def start(client, message):
             ),
             parse_mode=enums.ParseMode.HTML,
         )
-
-        # background logging (NO WAIT)
         asyncio.create_task(_log_group(client, message))
         return
 
@@ -84,7 +86,6 @@ async def start(client, message):
         ]
     )
 
-    # ⚡ INSTANT IMAGE SEND (CACHED)
     try:
         file_id = secrets.choice(START_IMAGE_FILE_IDS)
         await client.send_cached_media(
@@ -95,19 +96,74 @@ async def start(client, message):
             parse_mode=enums.ParseMode.HTML,
         )
     except Exception as e:
-        logger.error(f"START CACHED IMAGE ERROR: {e}")
+        logger.error(f"START IMAGE ERROR: {e}")
         await message.reply_text(
             caption,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML,
         )
 
-    # 🚀 background user logging (NO DELAY)
     asyncio.create_task(_log_user(client, message))
 
 
 # =====================================================
-# BACKGROUND TASKS (NON-BLOCKING)
+# CALLBACKS — HELP / ABOUT / BACK
+# =====================================================
+@Client.on_callback_query(filters.regex("^help$"))
+async def help_callback(client, query: CallbackQuery):
+    await query.answer()
+    await query.message.edit_caption(
+        script.HELP_TXT,
+        reply_markup=_back_button(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^about$"))
+async def about_callback(client, query: CallbackQuery):
+    await query.answer()
+    await query.message.edit_caption(
+        script.ABOUT_TXT.format(temp.B_NAME),
+        reply_markup=_back_button(),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+@Client.on_callback_query(filters.regex("^back$"))
+async def back_callback(client, query: CallbackQuery):
+    await query.answer()
+
+    caption = script.START_TXT.format(
+        query.from_user.mention,
+        temp.U_NAME,
+        temp.B_NAME,
+    )
+
+    await query.message.edit_caption(
+        caption,
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("🔍 Search", switch_inline_query_current_chat=""),
+                    InlineKeyboardButton("🤖 Updates", url="https://t.me/+lRax6d2QVoJlNmMx"),
+                ],
+                [
+                    InlineKeyboardButton("ℹ️ Help", callback_data="help"),
+                    InlineKeyboardButton("😊 About", callback_data="about"),
+                ],
+            ]
+        ),
+        parse_mode=enums.ParseMode.HTML,
+    )
+
+
+def _back_button():
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton("⬅️ Back", callback_data="back")]]
+    )
+
+# =====================================================
+# BACKGROUND LOGGING (NON-BLOCKING)
 # =====================================================
 async def _log_user(client, message):
     try:
@@ -116,7 +172,8 @@ async def _log_user(client, message):
             await client.send_message(
                 LOG_CHANNEL,
                 script.LOG_TEXT_P.format(
-                    message.from_user.id, message.from_user.mention
+                    message.from_user.id,
+                    message.from_user.mention,
                 ),
             )
     except Exception as e:
@@ -130,16 +187,18 @@ async def _log_group(client, message):
             await client.send_message(
                 LOG_CHANNEL,
                 script.LOG_TEXT_G.format(
-                    message.chat.title, message.chat.id, total, "Unknown"
+                    message.chat.title,
+                    message.chat.id,
+                    total,
+                    "Unknown",
                 ),
             )
             await db.add_chat(message.chat.id, message.chat.title)
     except Exception as e:
         logger.error(f"GROUP LOG ERROR: {e}")
 
-
 # =====================================================
-# ADMIN COMMANDS
+# ADMIN COMMANDS (UNCHANGED)
 # =====================================================
 @Client.on_message(filters.command("channel") & filters.user(ADMINS))
 async def channel_info(bot, message):
@@ -189,7 +248,7 @@ async def delete_all_index(bot, message):
     )
 
 
-@Client.on_callback_query(filters.regex("^autofilter_delete"))
+@Client.on_callback_query(filters.regex("^autofilter_delete$"))
 async def delete_all_index_confirm(bot, query):
     await Media.collection.drop()
     await query.answer("Done")
