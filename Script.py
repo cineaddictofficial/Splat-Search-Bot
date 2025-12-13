@@ -8,8 +8,7 @@ class script(object):
 👋 Hey {},  
 Welcome to **{}** — your smart movie search companion!
 
-🎬 Just **type any movie name** and I’ll find it for you instantly.  
-Sit back, relax & enjoy unlimited entertainment 🍿✨
+🎬 Send me your movie name with correct spelling and I’ll find it for you instantly.  
 """
 
     HELP_TXT = """
