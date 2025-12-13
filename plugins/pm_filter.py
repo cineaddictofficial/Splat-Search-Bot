@@ -1,6 +1,5 @@
 import asyncio
 import re
-import ast
 import math
 import logging
 
@@ -37,8 +36,34 @@ logger.setLevel(logging.ERROR)
 BUTTONS = {}
 SPELL_CHECK = {}
 
+DELETE_AFTER = 21600          # 6 hours
+REMINDER_BEFORE = 600         # 10 minutes before delete
+
+
 # ─────────────────────────────
-# FILE CALLBACK HANDLER (FIXED)
+# AUTO DELETE WITH REMINDER
+# ─────────────────────────────
+async def auto_delete_with_reminder(client, chat_id, file_msg_id):
+    try:
+        # wait until reminder time
+        await asyncio.sleep(DELETE_AFTER - REMINDER_BEFORE)
+
+        reminder = await client.send_message(
+            chat_id,
+            "⏳ **Reminder:** This file will be deleted in 10 minutes."
+        )
+
+        # wait remaining time
+        await asyncio.sleep(REMINDER_BEFORE)
+
+        await client.delete_messages(chat_id, [file_msg_id, reminder.id])
+
+    except Exception:
+        pass
+
+
+# ─────────────────────────────
+# FILE CALLBACK HANDLER
 # ─────────────────────────────
 @Client.on_callback_query(filters.regex(r"^(file|filep)#"))
 async def file_callback_handler(client, query: CallbackQuery):
@@ -69,7 +94,7 @@ async def file_callback_handler(client, query: CallbackQuery):
         if query.message.chat.type == enums.ChatType.PRIVATE:
             status = await query.message.reply("⏳ Sending your file...")
 
-            await client.send_cached_media(
+            sent = await client.send_cached_media(
                 chat_id=query.from_user.id,
                 file_id=file.file_id,
                 caption=caption,
@@ -79,10 +104,14 @@ async def file_callback_handler(client, query: CallbackQuery):
             await status.delete()
             await query.answer()
 
-            try:
-                await query.message.delete()
-            except Exception:
-                pass
+            # 🔔 Schedule reminder + auto delete
+            asyncio.create_task(
+                auto_delete_with_reminder(
+                    client,
+                    sent.chat.id,
+                    sent.id
+                )
+            )
             return
 
         # ───── GROUP CHAT ─────
@@ -178,9 +207,9 @@ async def next_page(client, query):
 
 
 # ─────────────────────────────
-# AUTO FILTER (CORE SEARCH)
+# AUTO FILTER
 # ─────────────────────────────
-async def auto_filter(client, message, spoll=False):
+async def auto_filter(client, message):
     settings = await get_settings(message.chat.id)
     search = message.text.strip()
 
