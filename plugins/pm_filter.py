@@ -78,14 +78,17 @@ async def file_callback_handler(client, query: CallbackQuery):
                 pass
 
         # ✅ PRIVATE CHAT → SEND FILE DIRECTLY
-        if query.message.chat.type == enums.ChatType.PRIVATE:
-            await client.send_cached_media(
-                chat_id=query.from_user.id,
-                file_id=file.file_id,
-                caption=caption,
-                protect_content=True if ident == "filep" else False
-            )
-            await query.answer()
+        status = await query.message.reply("⏳ Sending your file...")
+        
+        await client.send_cached_media(
+            chat_id=query.from_user.id,
+            file_id=file.file_id,
+            caption=caption,
+            protect_content=True if ident == "filep" else False
+        )
+        
+        await status.delete()
+        await query.answer()
             return
 
         # ✅ GROUP → CHECK SUBSCRIPTION / REDIRECT TO PM
@@ -113,6 +116,10 @@ async def file_callback_handler(client, query: CallbackQuery):
     except Exception as e:
         logger.exception(e)
         await query.answer("Error occurred", show_alert=True)
+    try:
+        await query.message.delete()
+    except Exception:
+        pass
 
 # ─────────────────────────────
 # GROUP MESSAGE HANDLER
