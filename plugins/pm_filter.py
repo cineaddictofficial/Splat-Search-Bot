@@ -239,7 +239,12 @@ async def auto_filter(client, message):
         ])
 
     imdb = await get_poster(search, file=files[0].file_name) if settings["imdb"] else None
-    caption = script.IMDB_TEMPLATE.format(**imdb, query=search) if imdb else f"Results for **{search}**"
+    note = "\n\n<i>(Note: Files will be automatically deleted after 6hrs)</i>"
+    caption = (
+        script.IMDB_TEMPLATE.format(**imdb, query=search) + note
+        if imdb
+        else f"<b>Results for {search}</b>{note}"
+    )
 
     try:
         if imdb and imdb.get("poster"):
