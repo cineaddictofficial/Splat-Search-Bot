@@ -17,6 +17,7 @@ from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
 from aiohttp import web
 from plugins import web_server
+from web import keep_alive
 
 PORT = "8080"
 
@@ -94,6 +95,7 @@ class Bot(Client):
                 yield message
                 current += 1
 
+keep_alive()
 
 app = Bot()
 app.run()
