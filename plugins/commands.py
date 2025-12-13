@@ -1,10 +1,5 @@
-import os
 import logging
-import random
 import asyncio
-import re
-import json
-import base64
 import secrets
 
 from Script import script
@@ -18,11 +13,7 @@ from database.connections_mdb import active_connection
 from info import (
     CHANNELS,
     ADMINS,
-    AUTH_CHANNEL,
     LOG_CHANNEL,
-    BATCH_FILE_CAPTION,
-    CUSTOM_FILE_CAPTION,
-    PROTECT_CONTENT,
 )
 
 from utils import (
@@ -33,36 +24,31 @@ from utils import (
 
 logger = logging.getLogger(__name__)
 
-# ===============================
-# PATH RESOLUTION (CRITICAL)
-# ===============================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-IMAGES_DIR = os.path.join(BASE_DIR, "..", "images")
-
-START_PICS = [
-    os.path.join(IMAGES_DIR, "start_1.png"),
-    os.path.join(IMAGES_DIR, "start_2.png"),
+# =====================================================
+# 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS (FASTEST)
+# =====================================================
+# Replace these with YOUR real file_ids
+START_IMAGE_FILE_IDS = [
+    "AgACAgUAAxkBAAIBQ2XYZ1111111111111111111",
+    "AgACAgUAAxkBAAIBQ2XYZ2222222222222222222",
 ]
 
-# Keep only valid files
-START_PICS = [p for p in START_PICS if os.path.isfile(p)]
-
-BATCH_FILES = {}
-
-# ===============================
-# /start COMMAND
-# ===============================
+# =====================================================
+# /start COMMAND (ZERO DELAY)
+# =====================================================
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
 
-    # ---------- GROUP ----------
+    caption = script.START_TXT.format(
+        message.from_user.mention if message.from_user else message.chat.title,
+        temp.U_NAME,
+        temp.B_NAME,
+    )
+
+    # ---------------- GROUP ----------------
     if message.chat.type in (enums.ChatType.GROUP, enums.ChatType.SUPERGROUP):
         await message.reply(
-            script.START_TXT.format(
-                message.from_user.mention if message.from_user else message.chat.title,
-                temp.U_NAME,
-                temp.B_NAME,
-            ),
+            caption,
             reply_markup=InlineKeyboardMarkup(
                 [
                     [InlineKeyboardButton("🤖 Updates", url="https://t.me/+lRax6d2QVoJlNmMx")],
@@ -72,22 +58,11 @@ async def start(client, message):
             parse_mode=enums.ParseMode.HTML,
         )
 
-        # 🔥 NON-BLOCKING logging
+        # background logging (NO WAIT)
         asyncio.create_task(_log_group(client, message))
         return
 
-    # ---------- PRIVATE ----------
-    if not await db.is_user_exist(message.from_user.id):
-        await db.add_user(message.from_user.id, message.from_user.first_name)
-        asyncio.create_task(
-            client.send_message(
-                LOG_CHANNEL,
-                script.LOG_TEXT_P.format(
-                    message.from_user.id, message.from_user.mention
-                ),
-            )
-        )
-
+    # ---------------- PRIVATE ----------------
     reply_markup = InlineKeyboardMarkup(
         [
             [
@@ -101,48 +76,63 @@ async def start(client, message):
         ]
     )
 
-    caption = script.START_TXT.format(
-        message.from_user.mention,
-        temp.U_NAME,
-        temp.B_NAME,
-    )
-
-    # ---------- TRUE RANDOM IMAGE ----------
+    # ⚡ INSTANT IMAGE SEND (CACHED)
     try:
-        photo = secrets.choice(START_PICS)
-        await message.reply_photo(
-            photo=photo,
+        file_id = secrets.choice(START_IMAGE_FILE_IDS)
+        await client.send_cached_media(
+            chat_id=message.chat.id,
+            file_id=file_id,
             caption=caption,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML,
         )
     except Exception as e:
-        logger.error(f"START IMAGE ERROR: {e}")
+        logger.error(f"START CACHED IMAGE ERROR: {e}")
         await message.reply_text(
             caption,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML,
         )
 
+    # 🚀 background user logging (NO DELAY)
+    asyncio.create_task(_log_user(client, message))
 
-# ===============================
-# ASYNC GROUP LOGGER (NO DELAY)
-# ===============================
+
+# =====================================================
+# BACKGROUND TASKS (NON-BLOCKING)
+# =====================================================
+async def _log_user(client, message):
+    try:
+        if not await db.is_user_exist(message.from_user.id):
+            await db.add_user(message.from_user.id, message.from_user.first_name)
+            await client.send_message(
+                LOG_CHANNEL,
+                script.LOG_TEXT_P.format(
+                    message.from_user.id, message.from_user.mention
+                ),
+            )
+    except Exception as e:
+        logger.error(f"USER LOG ERROR: {e}")
+
+
 async def _log_group(client, message):
-    if not await db.get_chat(message.chat.id):
-        total = await client.get_chat_members_count(message.chat.id)
-        await client.send_message(
-            LOG_CHANNEL,
-            script.LOG_TEXT_G.format(
-                message.chat.title, message.chat.id, total, "Unknown"
-            ),
-        )
-        await db.add_chat(message.chat.id, message.chat.title)
+    try:
+        if not await db.get_chat(message.chat.id):
+            total = await client.get_chat_members_count(message.chat.id)
+            await client.send_message(
+                LOG_CHANNEL,
+                script.LOG_TEXT_G.format(
+                    message.chat.title, message.chat.id, total, "Unknown"
+                ),
+            )
+            await db.add_chat(message.chat.id, message.chat.title)
+    except Exception as e:
+        logger.error(f"GROUP LOG ERROR: {e}")
 
 
-# ===============================
+# =====================================================
 # ADMIN COMMANDS
-# ===============================
+# =====================================================
 @Client.on_message(filters.command("channel") & filters.user(ADMINS))
 async def channel_info(bot, message):
     channels = CHANNELS if isinstance(CHANNELS, list) else [CHANNELS]
