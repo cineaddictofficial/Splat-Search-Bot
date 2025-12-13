@@ -5,8 +5,8 @@ class script(object):
     # ───────────────────────────────────
 
     START_TXT = (
-        "<b>👋 Hey {},</b>\n"
-        "<b>I'm P I X I E — your smart movie search companion 🎬</b>\n\n"
+        "<b>👋 Hey {},</b>"
+        "<b> I'm P I X I E — your smart movie search companion bot.</b>\n\n"
         "<i>Just send a movie name (correct spelling works best).</i>"
     )
 
