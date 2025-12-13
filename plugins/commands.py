@@ -27,10 +27,8 @@ logger = logging.getLogger(__name__)
 BATCH_FILES = {}
 
 START_PICS = [
-    "assets/start_1.jpg",
-    "assets/start_2.jpg",
-    "assets/start_3.jpg",
-    "assets/start_4.jpg",
+    "images/start_1.png",
+    "images/start_2.png",
 ]
 
 # --------------------------------------------------
