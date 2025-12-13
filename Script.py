@@ -6,7 +6,7 @@ class script(object):
 
     START_TXT = """
 👋 Hey {},  
-Welcome to **{}** — your smart movie search companion!
+I'm P I X I E — your smart movie search companion!
 
 🎬 Send me your movie name with correct spelling and I’ll find it for you instantly.  
 """
