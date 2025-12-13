@@ -28,7 +28,9 @@ logger = logging.getLogger(__name__)
 # 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS (FASTEST)
 # =====================================================
 # Replace these with YOUR real file_ids
-START_IMAGE_FILE_IDS = "AgACAgUAAxkDAAOMaT2qWpbwhfw1ac4sohar6_NkfogAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E"
+START_IMAGE_FILE_IDS = [
+    "AgACAgUAAxkDAAOMaT2qWpbwhfw1ac4sohar6_NkfogAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
+    ]
 
 @Client.on_message(filters.command("genid") & filters.private)
 async def gen_file_id(client, message):
