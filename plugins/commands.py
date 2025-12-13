@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 # =====================================================
 # Replace these with YOUR real file_ids
 START_IMAGE_FILE_IDS = [
-    "AgACAgUAAxkBAAIBQ2XYZ1111111111111111111",
-    "AgACAgUAAxkBAAIBQ2XYZ2222222222222222222",
+    "AAMCBQADGQECiQ-baT2nNg0bf6cVIuH9q7xzofPGtp8AAuwfAAIRPvFVDFSFn5Su0pMBAAdtAAM2BA",
+    "AAMCBQADGQECiQ_WaT2noiW2U2SH_IZyZ-ysBwABkTcZAALtHwACET7xVf8riagK4tnbAQAHbQADNgQ",
 ]
 
 @Client.on_message(filters.command("genid") & filters.private)
