@@ -52,6 +52,68 @@ logger.setLevel(logging.ERROR)
 BUTTONS = {}
 SPELL_CHECK = {}
 
+@Client.on_callback_query(filters.regex(r"^(file|filep)#"))
+async def file_callback_handler(client, query: CallbackQuery):
+    try:
+        ident, file_id = query.data.split("#")
+        files = await get_file_details(file_id)
+
+        if not files:
+            return await query.answer("File not found.", show_alert=True)
+
+        file = files[0]
+        settings = await get_settings(query.message.chat.id)
+
+        caption = file.caption or file.file_name
+        size = get_size(file.file_size)
+
+        if CUSTOM_FILE_CAPTION:
+            try:
+                caption = CUSTOM_FILE_CAPTION.format(
+                    file_name=file.file_name,
+                    file_size=size,
+                    file_caption=caption
+                )
+            except Exception:
+                pass
+
+        # ✅ PRIVATE CHAT → SEND FILE DIRECTLY
+        if query.message.chat.type == enums.ChatType.PRIVATE:
+            await client.send_cached_media(
+                chat_id=query.from_user.id,
+                file_id=file.file_id,
+                caption=caption,
+                protect_content=True if ident == "filep" else False
+            )
+            await query.answer()
+            return
+
+        # ✅ GROUP → CHECK SUBSCRIPTION / REDIRECT TO PM
+        if AUTH_CHANNEL and not await is_subscribed(client, query):
+            return await query.answer(
+                url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}"
+            )
+
+        if settings.get("botpm"):
+            return await query.answer(
+                url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}"
+            )
+
+        # fallback
+        await query.answer("Check your PM")
+
+    except UserIsBlocked:
+        await query.answer("❌ Unblock the bot first.", show_alert=True)
+
+    except PeerIdInvalid:
+        await query.answer(
+            url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}"
+        )
+
+    except Exception as e:
+        logger.exception(e)
+        await query.answer("Error occurred", show_alert=True)
+
 # ─────────────────────────────
 # GROUP MESSAGE HANDLER
 # ─────────────────────────────
