@@ -33,9 +33,17 @@ START_IMAGE_FILE_IDS = [
 
 @Client.on_message(filters.command("genid") & filters.private)
 async def gen_file_id(client, message):
-    msg = await message.reply_photo("images/start_4.jpg")
-    await message.reply_text(f"FILE_ID:\n<code>{msg.photo.file_id}</code>",
-                             parse_mode=enums.ParseMode.HTML)
+    if not message.reply_to_message or not message.reply_to_message.photo:
+        return await message.reply(
+            "❌ Reply to an image with <code>/genid</code>",
+            parse_mode=enums.ParseMode.HTML,
+        )
+
+    photo = message.reply_to_message.photo
+    await message.reply_text(
+        f"<b>FILE_ID:</b>\n<code>{photo.file_id}</code>",
+        parse_mode=enums.ParseMode.HTML,
+    )
     
 # =====================================================
 # /start COMMAND
