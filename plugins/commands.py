@@ -28,11 +28,9 @@ logger = logging.getLogger(__name__)
 # 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS
 # =====================================================
 START_IMAGE_FILE_IDS = [
-    "AgACAgUAAxkDAAOaaT2y2B1TE75n7POjQAABGQvifxP5AAJzC2sbyLvxVcfdYFzDQxoyAAgBAAMCAAN3AAceBA",
-    "AgACAgUAAxkDAAOeaT2zAzYxAbpaCSVw_2u1fPfzLcMAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
-    "AgACAgUAAxkDAAOiaT2zMMcGltjFxUu-Tnw4hGnWpfQAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
-    "AgACAgUAAxkDAAOpaT2zVnP7bCNf039DdRI6DbjA3xIAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
+    "AgACAgUAAxkDAAMHaT6P0G7EJhDGhB-C6r3Ck2KOtE8AAvILaxuWBPlVou9Yvd6lKlMACAEAAwIAA3cABx4E",
 ]
+
 @Client.on_message(filters.command("genid") & filters.private)
 async def gen_file_id(client, message):
     msg = await message.reply_photo("images/start_1.png")
