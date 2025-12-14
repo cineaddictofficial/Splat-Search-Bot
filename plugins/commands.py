@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 
 BATCH_FILES = {}
 
+@Client.on_message(filters.command("genid") & filters.private)
+async def gen_file_id(client, message):
+    msg = await message.reply_photo("images/start_1.png")
+    await message.reply_text(f"FILE_ID:\n<code>{msg.photo.file_id}</code>",
+                             parse_mode=enums.ParseMode.HTML)
+
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
