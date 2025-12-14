@@ -33,7 +33,12 @@ START_IMAGE_FILE_IDS = [
     "AgACAgUAAxkDAAOiaT2zMMcGltjFxUu-Tnw4hGnWpfQAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
     "AgACAgUAAxkDAAOpaT2zVnP7bCNf039DdRI6DbjA3xIAAnMLaxvIu_FVx91gXMNDGjIACAEAAwIAA3cABx4E",
 ]
-
+@Client.on_message(filters.command("genid") & filters.private)
+async def gen_file_id(client, message):
+    msg = await message.reply_photo("images/start_1.png")
+    await message.reply_text(f"FILE_ID:\n<code>{msg.photo.file_id}</code>",
+                             parse_mode=enums.ParseMode.HTML)
+    
 # =====================================================
 # /start COMMAND
 # =====================================================
