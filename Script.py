@@ -6,13 +6,13 @@ class script(object):
 
     START_TXT = (
         "<b>👋 Hey {},</b>"
-        "<b> I'm P I X I E — your smart movie search companion bot.</b>\n\n"
+        "<b> I'm F L I X Y — your smart movie search companion bot.</b>\n\n"
         "<i>Just send a movie name (correct spelling works best).</i>"
     )
 
     HELP_TXT = (
         "<b>🛠 Help Center</b>\n\n"
-        "P I X I E helps you search movies, manage filters, "
+        "F L I X Y helps you search movies, manage filters, "
         "connect chats, and more.\n\n"
         "👇 Select a category below to explore commands."
     )
@@ -20,12 +20,12 @@ class script(object):
     ABOUT_TXT = (
         "<b>📌 Bot Information</b>\n\n"
         "🤖 <b>Name:</b> {}\n"
-        "👨‍💻 <b>Creator:</b> <a href='https://t.me/TitanBotUpdates'>Titan Bots</a>\n"
+        "👨‍💻 <b>Creator:</b> <a href='https://t.me/PopzyMovies'>Popzy Movies</a>\n"
         "📚 <b>Library:</b> Pyrogram\n"
         "🐍 <b>Language:</b> Python 3\n"
         "🗄 <b>Database:</b> MongoDB\n"
         "🌐 <b>Server:</b> Koyeb\n"
-        "🔖 <b>Version:</b> v1.0 • Beta\n\n"
+        "🔖 <b>Version:</b> v3.0 • Beta\n\n"
         "<i>Built for speed, stability, and smooth movie searching 🚀</i>"
     )
 
@@ -61,13 +61,13 @@ class script(object):
 
     BUTTON_TXT = (
         "<b>🔘 Inline Buttons — Guide</b>\n\n"
-        "P I X I E supports <b>URL</b> and <b>Alert</b> buttons.\n\n"
+        "F L I X Y supports <b>URL</b> and <b>Alert</b> buttons.\n\n"
         "<b>⚠ Notes</b>\n"
         "• Message text is mandatory\n"
         "• Works with all media types\n"
         "• Use correct markdown syntax\n\n"
         "<b>🔗 URL Button</b>\n"
-        "<code>[Text](buttonurl:https://t.me/TitanBotUpdates)</code>\n\n"
+        "<code>[Text](buttonurl:https://t.me/PopzyMovies)</code>\n\n"
         "<b>⚠ Alert Button</b>\n"
         "<code>[Text](buttonalert:This is an alert)</code>"
     )
