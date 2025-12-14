@@ -1,3 +1,4 @@
+import os
 import logging
 import asyncio
 import secrets
@@ -6,7 +7,6 @@ from Script import script
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
-from database.ia_filterdb import Media, unpack_new_file_id
 from database.users_chats_db import db
 from database.connections_mdb import active_connection
 
@@ -25,14 +25,40 @@ from utils import (
 logger = logging.getLogger(__name__)
 
 # =====================================================
-# 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS
+# 🚀 START IMAGES — ENV LOADED + HOT RELOADABLE
 # =====================================================
-START_IMAGE_FILE_IDS = [
-    "AgACAgUAAxkBAAMSaT8UttB1uNr-XrtD1fLsZ2amxn0AAgsMaxu3pPlVtNGA6x70FkYACAEAAwIAA3cABx4E",
-]
+def load_start_image_ids():
+    return [
+        fid.strip()
+        for fid in os.getenv("START_IMAGE_FILE_IDS", "").split(",")
+        if fid.strip()
+    ]
 
+START_IMAGE_FILE_IDS = load_start_image_ids()
+
+if not START_IMAGE_FILE_IDS:
+    logger.warning("⚠ START_IMAGE_FILE_IDS is empty")
+
+# =====================================================
+# /reload_start_images — ADMIN ONLY (NO RESTART)
+# =====================================================
+@Client.on_message(filters.command("reload_start_images") & filters.user(ADMINS))
+async def reload_start_images(_, message):
+    global START_IMAGE_FILE_IDS
+    START_IMAGE_FILE_IDS = load_start_image_ids()
+
+    if not START_IMAGE_FILE_IDS:
+        return await message.reply("❌ No START_IMAGE_FILE_IDS found in env")
+
+    await message.reply(
+        f"✅ Reloaded {len(START_IMAGE_FILE_IDS)} start image(s)"
+    )
+
+# =====================================================
+# /genid — REPLY TO IMAGE ONLY
+# =====================================================
 @Client.on_message(filters.command("genid") & filters.private)
-async def gen_file_id(client, message):
+async def gen_file_id(_, message):
     if not message.reply_to_message or not message.reply_to_message.photo:
         return await message.reply(
             "❌ Reply to an image with <code>/genid</code>",
@@ -44,7 +70,7 @@ async def gen_file_id(client, message):
         f"<b>FILE_ID:</b>\n<code>{photo.file_id}</code>",
         parse_mode=enums.ParseMode.HTML,
     )
-    
+
 # =====================================================
 # /start COMMAND
 # =====================================================
@@ -74,6 +100,9 @@ async def start(client, message):
     reply_markup = _start_buttons()
 
     try:
+        if not START_IMAGE_FILE_IDS:
+            raise ValueError("No start images available")
+
         file_id = secrets.choice(START_IMAGE_FILE_IDS)
         await client.send_cached_media(
             chat_id=message.chat.id,
@@ -92,12 +121,11 @@ async def start(client, message):
 
     asyncio.create_task(_log_user(client, message))
 
-
 # =====================================================
-# CALLBACKS — START / HELP / ABOUT
+# CALLBACKS — HELP / ABOUT / BACK
 # =====================================================
 @Client.on_callback_query(filters.regex("^help$"))
-async def help_callback(client, query: CallbackQuery):
+async def help_callback(_, query: CallbackQuery):
     await query.answer()
     await query.message.edit_caption(
         script.HELP_TXT,
@@ -105,9 +133,8 @@ async def help_callback(client, query: CallbackQuery):
         parse_mode=enums.ParseMode.HTML,
     )
 
-
 @Client.on_callback_query(filters.regex("^about$"))
-async def about_callback(client, query: CallbackQuery):
+async def about_callback(_, query: CallbackQuery):
     await query.answer()
     await query.message.edit_caption(
         script.ABOUT_TXT.format(temp.B_NAME),
@@ -115,79 +142,14 @@ async def about_callback(client, query: CallbackQuery):
         parse_mode=enums.ParseMode.HTML,
     )
 
-
 @Client.on_callback_query(filters.regex("^back_start$"))
-async def back_start(client, query: CallbackQuery):
+async def back_start(_, query: CallbackQuery):
     await query.answer()
     await query.message.edit_caption(
         script.START_TXT.format(query.from_user.mention),
         reply_markup=_start_buttons(),
         parse_mode=enums.ParseMode.HTML,
     )
-
-
-# =====================================================
-# HELP CATEGORIES
-# =====================================================
-@Client.on_callback_query(filters.regex("^help_filters$"))
-async def help_filters(client, query):
-    await query.answer()
-    await query.message.edit_caption(
-        script.MANUELFILTER_TXT,
-        reply_markup=_back_to_help(),
-        parse_mode=enums.ParseMode.HTML,
-    )
-
-
-@Client.on_callback_query(filters.regex("^help_buttons$"))
-async def help_buttons(client, query):
-    await query.answer()
-    await query.message.edit_caption(
-        script.BUTTON_TXT,
-        reply_markup=_back_to_help(),
-        parse_mode=enums.ParseMode.HTML,
-    )
-
-
-@Client.on_callback_query(filters.regex("^help_autofilter$"))
-async def help_autofilter(client, query):
-    await query.answer()
-    await query.message.edit_caption(
-        script.AUTOFILTER_TXT,
-        reply_markup=_back_to_help(),
-        parse_mode=enums.ParseMode.HTML,
-    )
-
-
-@Client.on_callback_query(filters.regex("^help_connections$"))
-async def help_connections(client, query):
-    await query.answer()
-    await query.message.edit_caption(
-        script.CONNECTION_TXT,
-        reply_markup=_back_to_help(),
-        parse_mode=enums.ParseMode.HTML,
-    )
-
-
-@Client.on_callback_query(filters.regex("^help_extra$"))
-async def help_extra(client, query):
-    await query.answer()
-    await query.message.edit_caption(
-        script.EXTRAMOD_TXT,
-        reply_markup=_back_to_help(),
-        parse_mode=enums.ParseMode.HTML,
-    )
-
-
-@Client.on_callback_query(filters.regex("^help_admin$"))
-async def help_admin(client, query):
-    await query.answer()
-    await query.message.edit_caption(
-        script.ADMIN_TXT,
-        reply_markup=_back_to_help(),
-        parse_mode=enums.ParseMode.HTML,
-    )
-
 
 # =====================================================
 # BUTTON BUILDERS
@@ -205,7 +167,6 @@ def _start_buttons():
             ],
         ]
     )
-
 
 def _help_buttons():
     return InlineKeyboardMarkup(
@@ -228,18 +189,10 @@ def _help_buttons():
         ]
     )
 
-
-def _back_to_help():
-    return InlineKeyboardMarkup(
-        [[InlineKeyboardButton("⬅️ Back to Help", callback_data="help")]]
-    )
-
-
 def _back_to_start():
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton("⬅️ Back", callback_data="back_start")]]
     )
-
 
 # =====================================================
 # BACKGROUND LOGGING
@@ -257,7 +210,6 @@ async def _log_user(client, message):
             )
     except Exception as e:
         logger.error(f"USER LOG ERROR: {e}")
-
 
 async def _log_group(client, message):
     try:
