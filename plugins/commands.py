@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # 🚀 START IMAGES — TELEGRAM CACHED FILE_IDS
 # =====================================================
 START_IMAGE_FILE_IDS = [
-    "AgACAgUAAxkDAAMHaT6P0G7EJhDGhB-C6r3Ck2KOtE8AAvILaxuWBPlVou9Yvd6lKlMACAEAAwIAA3cABx4E",
+    "AgACAgUAAxkDAAMMaT8QNf7IL5AVKH43FwbMYkHc6fkAAgoMaxu3pPlVPzavUji9gA0ACAEAAwIAA3kABx4E",
 ]
 
 @Client.on_message(filters.command("genid") & filters.private)
